@@ -16,7 +16,8 @@ Package.onUse(function(api) {
     'ecmascript',
     'ejson',
     'underscore',
-    'accounts-base'
+    'accounts-base',
+    'check'
   ]);
 
   api.use('rocketchat:lib', 'server');
