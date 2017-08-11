@@ -1,3 +1,36 @@
+<a name="0.57.3"></a>
+## 0.57.3 (2017-08-08)
+
+
+### Bug Fixes
+
+- [#7390](https://github.com/RocketChat/Rocket.Chat/pull/7390) custom soundEdit.html
+- [#7395](https://github.com/RocketChat/Rocket.Chat/pull/7395) file upload broken when running in subdirectory https://github.com…
+- [#7444](https://github.com/RocketChat/Rocket.Chat/pull/7444) Fix Anonymous User
+- [#7535](https://github.com/RocketChat/Rocket.Chat/pull/7535) Fix Join Channel Without Preview Room Permission
+- [#7555](https://github.com/RocketChat/Rocket.Chat/pull/7555) Improve build script example
+- [#7533](https://github.com/RocketChat/Rocket.Chat/pull/7533) Missing eventName in unUser
+- [#7325](https://github.com/RocketChat/Rocket.Chat/pull/7325) Modernize rate limiting of sendMessage
+- [#7394](https://github.com/RocketChat/Rocket.Chat/pull/7394) Use UTF8 setting for /create command
+- [#7212](https://github.com/RocketChat/Rocket.Chat/pull/7212) Users and Channels list not respecting permissions
+
+
+
+<a name="0.57.2"></a>
+## 0.57.2 (2017-07-14)
+
+
+### Bug Fixes
+
+- [#7472](https://github.com/RocketChat/Rocket.Chat/pull/7472) Always set LDAP properties on login
+- [#7431](https://github.com/RocketChat/Rocket.Chat/pull/7431) Fix Emails in User Admin View
+- [#7469](https://github.com/RocketChat/Rocket.Chat/pull/7469) Fix file upload on Slack import
+- [#7432](https://github.com/RocketChat/Rocket.Chat/pull/7432) Fix Private Channel List Submit
+- [#7403](https://github.com/RocketChat/Rocket.Chat/pull/7403) Fix Unread Bar Disappearing
+- [#7443](https://github.com/RocketChat/Rocket.Chat/pull/7443) S3 uploads not working for custom URLs
+
+
+
 <a name="0.57.1"></a>
 ## 0.57.1 (2017-07-06)
 - :hand: [#7428](https://github.com/RocketChat/Rocket.Chat/pull/7428) Fix migration of avatars from version 0.57.0
