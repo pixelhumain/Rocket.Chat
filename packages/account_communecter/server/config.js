@@ -1,6 +1,10 @@
 import { Accounts } from 'meteor/accounts-base';
 
 Accounts.registerLoginHandler(function(loginRequest) {
+	if (loginRequest.user && loginRequest.user.email && loginRequest.password) {
+		loginRequest.email = loginRequest.user.email;
+		loginRequest.pwd = loginRequest.password;
+	}
 	if (!loginRequest.email || !loginRequest.pwd) {
 		return null;
 	}

@@ -224,19 +224,16 @@ class API extends Restivus {
 
 		const self = this;
 
-		this.addRoute('login', {authRequired: false}, {
+		this.addRoute('login', { authRequired: false }, {
 			post() {
 				const args = loginCompatibility(this.bodyParams);
-
-				const invocation = new DDPCommon.MethodInvocation({
-					connection: {
-						close() {}
-					}
-				});
+				const user = args.user;
+				const password = args.password;
 
 				let auth;
 				try {
-					auth = DDP._CurrentInvocation.withValue(invocation, () => Meteor.call('login', args));
+					// auth = DDP._CurrentInvocation.withValue(invocation, () => Meteor.call('login', args));
+					auth = Auth.loginWithPassword(user, password);
 				} catch (error) {
 					let e = error;
 					if (error.reason === 'User not found') {
@@ -256,30 +253,61 @@ class API extends Restivus {
 					};
 				}
 
-				this.user = Meteor.users.findOne({
-					_id: auth.id
-				});
+				// Get the authenticated user
+				// TODO: Consider returning the user in Auth.loginWithPassword(), instead of fetching it again here
+				if (auth.userId && auth.authToken) {
+					const searchQuery = {};
+					searchQuery[self._config.auth.token] = Accounts._hashLoginToken(auth.authToken);
 
-				this.userId = this.user._id;
+					this.user = Meteor.users.findOne({
+						'_id': auth.userId
+					}, searchQuery);
+					this.userId = this.user && this.user._id;
+				}
 
-				// Remove tokenExpires to keep the old behavior
-				Meteor.users.update({
-					_id: this.user._id,
-					'services.resume.loginTokens.hashedToken': Accounts._hashLoginToken(auth.token)
-				}, {
-					$unset: {
-						'services.resume.loginTokens.$.when': 1
-					}
-				});
+				// Start changes
+				const attempt = {
+					allowed: true,
+					user: this.user,
+					methodArguments: [{
+						user,
+						password
+					}],
+					type: 'password'
+				};
+
+				if (this.bodyParams.code) {
+					attempt.methodArguments[0] = {
+						totp: {
+							code: this.bodyParams.code,
+							...attempt.methodArguments[0]
+						}
+					};
+				}
+
+				Accounts._validateLogin(null, attempt);
+
+				if (attempt.allowed !== true) {
+					const error = attempt.error || new Meteor.Error('invalid-login-attempt', 'Invalid Login Attempt');
+
+					return {
+						statusCode: 401,
+						body: {
+							status: 'error',
+							error: error.error,
+							reason: error.reason,
+							message: error.message
+						}
+					};
+				}
+				// End changes
 
 				const response = {
 					status: 'success',
-					data: {
-						userId: this.userId,
-						authToken: auth.token
-					}
+					data: auth
 				};
 
+				// Call the login hook with the authenticated user attached
 				const extraData = self._config.onLoggedIn && self._config.onLoggedIn.call(this);
 
 				if (extraData != null) {
