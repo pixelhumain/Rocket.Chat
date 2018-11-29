@@ -2,21 +2,32 @@
 /* globals expect */
 /* eslint no-unused-vars: 0 */
 
-import {getCredentials, api, login, request, credentials, directMessage, log, apiUsername, apiEmail } from '../../data/api-data.js';
-import {adminEmail, password} from '../../data/user.js';
+import {
+	getCredentials,
+	api,
+	login,
+	request,
+	credentials,
+	directMessage,
+	log,
+	apiUsername,
+	apiEmail,
+} from '../../data/api-data.js';
+import { adminEmail, password } from '../../data/user.js';
 import supertest from 'supertest';
+import { adminUsername } from '../../data/user';
 
 describe('[Direct Messages]', function() {
 	this.retries(0);
 
-	before(done => getCredentials(done));
+	before((done) => getCredentials(done));
 
 	it('/chat.postMessage', (done) => {
 		request.post(api('chat.postMessage'))
 			.set(credentials)
 			.send({
 				channel: 'rocket.cat',
-				text: 'This message was sent using the API'
+				text: 'This message was sent using the API',
 			})
 			.expect('Content-Type', 'application/json')
 			.expect(200)
@@ -34,7 +45,7 @@ describe('[Direct Messages]', function() {
 			.set(credentials)
 			.send({
 				roomId: directMessage._id,
-				topic: 'a direct message with rocket.cat'
+				topic: 'a direct message with rocket.cat',
 			})
 			.expect('Content-Type', 'application/json')
 			.expect(200)
@@ -44,12 +55,105 @@ describe('[Direct Messages]', function() {
 			.end(done);
 	});
 
+	describe('Testing DM info', () => {
+		let testDM = {};
+		let dmMessage = {};
+		it('creating new DM...', (done) => {
+			request.post(api('im.create'))
+				.set(credentials)
+				.send({
+					username: 'rocket.cat',
+				})
+				.expect('Content-Type', 'application/json')
+				.expect(200)
+				.expect((res) => {
+					testDM = res.body.room;
+				})
+				.end(done);
+		});
+		it('sending a message...', (done) => {
+			request.post(api('chat.sendMessage'))
+				.set(credentials)
+				.send({
+					message: {
+						text: 'Sample message',
+						rid: testDM._id,
+					},
+				})
+				.expect('Content-Type', 'application/json')
+				.expect(200)
+				.expect((res) => {
+					expect(res.body).to.have.property('success', true);
+					dmMessage = res.body.message;
+				})
+				.end(done);
+		});
+		it('REACTing with last message', (done) => {
+			request.post(api('chat.react'))
+				.set(credentials)
+				.send({
+					emoji: ':squid:',
+					messageId: dmMessage._id,
+				})
+				.expect('Content-Type', 'application/json')
+				.expect(200)
+				.expect((res) => {
+					expect(res.body).to.have.property('success', true);
+				})
+				.end(done);
+		});
+		it('STARring last message', (done) => {
+			request.post(api('chat.starMessage'))
+				.set(credentials)
+				.send({
+					messageId: dmMessage._id,
+				})
+				.expect('Content-Type', 'application/json')
+				.expect(200)
+				.expect((res) => {
+					expect(res.body).to.have.property('success', true);
+				})
+				.end(done);
+		});
+		it('PINning last message', (done) => {
+			request.post(api('chat.pinMessage'))
+				.set(credentials)
+				.send({
+					messageId: dmMessage._id,
+				})
+				.expect('Content-Type', 'application/json')
+				.expect(200)
+				.expect((res) => {
+					expect(res.body).to.have.property('success', true);
+				})
+				.end(done);
+		});
+		it('should return all DM messages where the last message of array should have the "star" array with USERS star ONLY', (done) => {
+			request.get(api('im.messages'))
+				.set(credentials)
+				.query({
+					roomId: testDM._id,
+				})
+				.expect('Content-Type', 'application/json')
+				.expect(200)
+				.expect((res) => {
+					expect(res.body).to.have.property('success', true);
+					expect(res.body).to.have.property('messages').and.to.be.an('array');
+					const { messages } = res.body;
+					const lastMessage = messages.filter((message) => message._id === dmMessage._id)[0];
+					expect(lastMessage).to.have.property('starred').and.to.be.an('array');
+					expect(lastMessage.starred[0]._id).to.be.equal(adminUsername);
+				})
+				.end(done);
+		});
+	});
+
 	it('/im.history', (done) => {
 		request.get(api('im.history'))
 			.set(credentials)
 			.query({
 				roomId: directMessage._id,
-				userId: 'rocket.cat'
+				userId: 'rocket.cat',
 			})
 			.expect('Content-Type', 'application/json')
 			.expect(200)
@@ -91,7 +195,7 @@ describe('[Direct Messages]', function() {
 			.set(credentials)
 			.send({
 				roomId: directMessage._id,
-				userId: 'rocket.cat'
+				userId: 'rocket.cat',
 			})
 			.expect('Content-Type', 'application/json')
 			.expect(200)
@@ -105,7 +209,7 @@ describe('[Direct Messages]', function() {
 		request.get(api('im.counters'))
 			.set(credentials)
 			.query({
-				roomId: directMessage._id
+				roomId: directMessage._id,
 			})
 			.expect('Content-Type', 'application/json')
 			.expect(200)
@@ -127,7 +231,7 @@ describe('[Direct Messages]', function() {
 			.set(credentials)
 			.send({
 				roomId: directMessage._id,
-				userId: 'rocket.cat'
+				userId: 'rocket.cat',
 			})
 			.expect('Content-Type', 'application/json')
 			.expect(200)
@@ -156,7 +260,7 @@ describe('[Direct Messages]', function() {
 					active: true,
 					roles: ['user'],
 					joinDefaultChannels: true,
-					verified: true
+					verified: true,
 				})
 				.expect((res) => {
 					userId = res.body.user._id;
@@ -169,7 +273,7 @@ describe('[Direct Messages]', function() {
 				.set(credentials)
 				.send({
 					channel: `@${ username }`,
-					text: 'This message was sent using the API'
+					text: 'This message was sent using the API',
 				})
 				.expect('Content-Type', 'application/json')
 				.expect(200)
@@ -186,7 +290,7 @@ describe('[Direct Messages]', function() {
 			request.get(api('subscriptions.getOne'))
 				.set(credentials)
 				.query({
-					roomId: directMessageId
+					roomId: directMessageId,
 				})
 				.expect('Content-Type', 'application/json')
 				.expect(200)
@@ -204,8 +308,8 @@ describe('[Direct Messages]', function() {
 				.send({
 					userId,
 					data: {
-						name: updatedName
-					}
+						name: updatedName,
+					},
 				})
 				.expect((res) => {
 					expect(res.body.user).to.have.property('name', updatedName);
@@ -217,7 +321,7 @@ describe('[Direct Messages]', function() {
 			request.get(api('subscriptions.getOne'))
 				.set(credentials)
 				.query({
-					roomId: directMessageId
+					roomId: directMessageId,
 				})
 				.expect('Content-Type', 'application/json')
 				.expect(200)
@@ -225,6 +329,25 @@ describe('[Direct Messages]', function() {
 					expect(res.body).to.have.property('success', true);
 					expect(res.body.subscription).to.have.property('name', username);
 					expect(res.body.subscription).to.have.property('fname', updatedName);
+				})
+				.end(done);
+		});
+	});
+	describe('/im.members', () => {
+		it('should return and array with two members', (done) => {
+			request.get(api('im.members'))
+				.set(credentials)
+				.query({
+					roomId: directMessage._id,
+				})
+				.expect('Content-Type', 'application/json')
+				.expect(200)
+				.expect((res) => {
+					expect(res.body).to.have.property('success', true);
+					expect(res.body).to.have.property('count').and.to.be.equal(2);
+					expect(res.body).to.have.property('offset').and.to.be.equal(0);
+					expect(res.body).to.have.property('total').and.to.be.equal(2);
+					expect(res.body).to.have.property('members').and.to.have.lengthOf(2);
 				})
 				.end(done);
 		});

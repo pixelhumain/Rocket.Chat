@@ -2,7 +2,7 @@ Package.describe({
 	name: 'rocketchat:lib',
 	version: '0.0.1',
 	summary: 'RocketChat libraries',
-	git: ''
+	git: '',
 });
 
 Package.onUse(function(api) {
@@ -28,9 +28,10 @@ Package.onUse(function(api) {
 	api.use('rocketchat:streamer');
 	api.use('rocketchat:version');
 	api.use('rocketchat:logger');
+	api.use('rocketchat:mailer');
 	api.use('rocketchat:custom-oauth');
-	api.use('rocketchat:authorization', {unordered: true});
-	api.use('rocketchat:push-notifications', {unordered: true});
+	api.use('rocketchat:authorization', { unordered: true });
+	api.use('rocketchat:push-notifications', { unordered: true });
 
 	api.use('templating', 'client');
 	api.use('kadira:flow-router');
@@ -51,7 +52,7 @@ Package.onUse(function(api) {
 		'lib/roomTypes/index.js',
 		'lib/roomTypes/private.js',
 		'lib/roomTypes/public.js',
-		'lib/roomTypes/unread.js'
+		'lib/roomTypes/unread.js',
 	]);
 
 	// COMMON LIB
@@ -81,11 +82,13 @@ Package.onUse(function(api) {
 
 	// SERVER FUNCTIONS
 	api.addFiles('server/functions/isDocker.js', 'server');
+	api.addFiles('server/functions/isTheLastMessage.js', 'server');
 	api.addFiles('server/functions/addUserToDefaultChannels.js', 'server');
 	api.addFiles('server/functions/addUserToRoom.js', 'server');
 	api.addFiles('server/functions/archiveRoom.js', 'server');
 	api.addFiles('server/functions/checkUsernameAvailability.js', 'server');
 	api.addFiles('server/functions/checkEmailAvailability.js', 'server');
+	api.addFiles('server/functions/composeMessageObjectWithUser.js', 'server');
 	api.addFiles('server/functions/createRoom.js', 'server');
 	api.addFiles('server/functions/cleanRoomHistory.js', 'server');
 	api.addFiles('server/functions/deleteMessage.js', 'server');
@@ -238,6 +241,7 @@ Package.onUse(function(api) {
 	api.addFiles('client/views/customFieldsForm.js', 'client');
 
 	api.addFiles('startup/defaultRoomTypes.js');
+	api.addFiles('startup/index.js', 'server');
 
 	// VERSION
 	api.addFiles('rocketchat.info');
